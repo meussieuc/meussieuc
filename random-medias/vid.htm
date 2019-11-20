@@ -1,0 +1,51 @@
+<meta charset="UTF-8">
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="scripts/jquery-3.4.1.min.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/jq-utils.js"></script>
+    <script src="scripts/gfy-const.js"></script>
+    <script>
+        const load = function () {
+            var gfyAnimal = $.urlParam("gfy");
+
+            document.title = `Random Gfycats - ${gfyAnimal}`;
+
+            prefixes.forEach(prefix => {
+                document.getElementById(prefix).setAttribute("src",
+                    `https://${prefix}.gfycat.com/${gfyAnimal}.webm`);
+            });
+            document.getElementById("player").load();
+        }
+    </script>
+    <style>
+        body {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #player {
+            max-height: 100%;
+        }
+    </style>
+    <title>Random Gfycats - Video</title>
+</head>
+
+<body onload="load()">
+
+    <video id="player" controls>
+        <source id="zippy" src="" type="video/webm">
+        <source id="fat" src="" type="video/webm">
+        <source id="giant" src="" type="video/webm">
+        Your browser does not support HTML5 video.
+    </video>
+
+</body>
+
+</html>

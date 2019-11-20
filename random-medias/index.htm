@@ -1,0 +1,82 @@
+<meta charset="UTF-8">
+<!DOCTYPE xhtml>
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="scripts/jquery-3.4.1.min.js"></script>
+    <script src="scripts/utils.js"></script>
+    <title>Random Gfycats</title>
+    <script>
+        function getNewGfyWorker() {
+            var worker = new Worker("scripts/gfycat.js");
+
+            worker.onmessage = function (event) {
+                var progress = JSON.parse(event.data);
+                renderProgress(progress);
+                if (!isNullOrUndefined(progress.newId))
+                    document.getElementById("placeholder").appendChild(getCard(GenType.GFYCAT, progress.newId));
+            }
+
+            worker.onerror = function (event) {
+                console.error(event);
+            }
+
+            return worker;
+        }
+
+        function startWorker() {
+            gfyWorker.terminate();
+
+            gfyWorker = getNewGfyWorker();
+
+            gfyWorker.postMessage(JSON.stringify(new StartMessage(
+                $('#gentype').val(), 
+                $('#nbgfys').val())));
+        }
+
+        function terminateWorker() {
+            console.info("Stopping worker");
+            gfyWorker.terminate();
+        }
+
+        var gfyWorker = getNewGfyWorker();
+
+        function load() {
+            populateSelect("gentype", GenType);
+        }
+    </script>
+</head>
+
+<body onload="load()">
+    <div id="toppanel">
+        <div class="controls">
+            <label for="gentype">Get from</label>
+            <select id="gentype" class="control" name="gentype">
+            </select>
+            <label for="nbgfys">Nb Gfys</label>
+            <input id="nbgfys" class="control" name="nbgfys" type="number" min="1" max="100" value="20"
+                placeholder="Nb Gfys">
+            <button id="btngo" onclick="startWorker()">GO!</button>
+            <button id="btnstop" onclick="terminateWorker()">Stop</button>
+            <button id="btnclear" onclick="clearGfys()">Clear</button>
+        </div>
+        <div class="stats">
+            <span class="stat">
+                <span class="label">Requested:</span><span id="nbreq" class="value">0</span>
+            </span>
+            <span class="stat">
+                <span class="label">Success:</span><span id="successRate" class="value">-</span>
+            </span>
+            <div id="foundprogress" class="progress">
+                <div class="bar"><span class="label"></span></div>
+            </div>
+        </div>
+    </div>
+    <div id="content">
+        <div id="placeholder" class="wrappingrow"></div>
+    </div>
+</body>
+
+</html>

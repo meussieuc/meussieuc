@@ -1,0 +1,102 @@
+body {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+#toppanel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #cbe3e4;
+    color: #244848;
+    border-bottom: 1px solid #aed3d3;
+}
+
+#content {
+    margin-top: 100px;
+}
+
+.controls {
+    display: flex;
+    padding: .5em;
+    align-items: center;
+    justify-content: center;
+}
+
+.stats {
+    display: flex;
+    padding: 0 .5em .5em;
+    align-items: center;
+    justify-content: center;
+}
+
+.control {
+    margin: 0 1em;
+    font-size: 1.5em;
+}
+
+.wrappingrow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#btngo {
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.stat .value {
+    padding: 0 1em 1em;
+}
+
+.gfycard {
+    display: inline-flex;
+    margin: 2px;
+}
+
+.gfycard:hover {
+    box-shadow: 0 0 10px 
+    #34f3fb;
+}
+
+img.thumbnail {
+    height: 200px;
+}
+
+.overlay {
+    position: absolute;
+    display: flex;
+}
+
+.gfylink {
+    display: inline-flex;
+    padding: .1em 1em;
+    margin: 2px;
+    background: rgb(209, 209, 209);
+    border: 1px solid gray;
+    text-decoration: none;
+    color: rgb(70, 70, 70);
+    font-size: .5em;
+}
+
+.progress {
+    width: 100%;
+    background-color: grey;
+}
+
+.progress .bar {
+    width: 0%;
+    height: 30px;
+    background-color: green;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.progress .label {
+    color: white;
+}
