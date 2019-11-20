@@ -1,0 +1,146 @@
+.dg-grid {
+   position: relative;
+   margin: auto;
+}
+
+.dg-cell {
+   border: none;
+   margin: 0px;
+   padding: 0px;
+   border-collapse: collapse;
+   background: url(../images/floor-50.jpg);
+   position: absolute;
+}
+
+.dg-cell td {
+   margin: 0px;
+   padding: 0px;
+}
+
+.dg-cell-top-left , .dg-cell-top-right,
+.dg-cell-middle-left, .dg-cell-middle-right,
+.dg-cell-bottom-left, .dg-cell-bottom-right {
+   width: 10px;
+}
+
+.dg-cell-top-center , .dg-cell-middle-center , .dg-cell-bottom-center  {
+   width: 30px;
+}
+
+.dg-cell-top-left, .dg-cell-top-center , .dg-cell-top-right,
+.dg-cell-bottom-left, .dg-cell-bottom-center , .dg-cell-bottom-right {
+   height: 10px;
+}
+
+.dg-cell-middle-left, .dg-cell-middle-center , .dg-cell-middle-right {
+   height: 30px;
+}
+
+.wall {
+   background: url(../images/wall-30.jpg) -10px -10px;
+}
+
+.window {
+   background: url(../images/window-30.jpg) -10px -10px;
+}
+
+.dg-cell-top-center.wall, .dg-cell-bottom-center.wall {
+   background: url(../images/wall-30.jpg) 0px -10px;
+}
+
+.dg-cell-middle-left.wall, .dg-cell-middle-right.wall {
+   background: url(../images/wall-30.jpg) -10px -0px;
+}
+
+.dg-cell-top-center.window, .dg-cell-bottom-center.window {
+   background: url(../images/window-30.jpg) 0px -10px;
+}
+
+.dg-cell-middle-left.window, .dg-cell-middle-right.window {
+   background: url(../images/window-30.jpg) -10px -0px;
+}
+
+.dg-cell-top-center.door, .dg-cell-bottom-center.door {
+   background: url(../images/door-30.jpg) 0px -10px;
+}
+
+.dg-cell-middle-left.door, .dg-cell-middle-right.door {
+   background: url(../images/door-30.jpg) -10px -0px;
+}
+
+.dg-cell-middle-center.light-top {
+   box-shadow: rgba(255, 255, 127, .3) 0px 15px 15px inset;
+}
+
+.dg-cell-middle-center.light-bottom {
+   box-shadow: rgba(255, 255, 127, .3) 0px -15px 15px 0 inset;
+}
+
+.dg-cell-middle-center.light-left {
+   box-shadow: rgba(255, 255, 127, .3) 15px 0px 15px inset;
+}
+
+.dg-cell-middle-center.light-right {
+   box-shadow: rgba(255, 255, 127, .3) -15px 0 15px inset;
+}
+
+.dg-cell-middle-center.light-top.light-bottom {
+   box-shadow: rgba(255, 255, 127, .3) 0px 15px 15px inset,
+               rgba(255, 255, 127, .3) 0px -15px 15px 0 inset;
+}
+
+.dg-cell-middle-center.light-top.light-left {
+   box-shadow: rgba(255, 255, 127, .3) 0px 15px 15px inset,
+               rgba(255, 255, 127, .3) 15px 0px 15px inset;
+}
+
+.dg-cell-middle-center.light-top.light-right {
+   box-shadow: rgba(255, 255, 127, .3) 0px 15px 15px inset,
+               rgba(255, 255, 127, .3) -15px 0 15px inset;
+}
+
+.dg-cell-middle-center.light-bottom.light-left {
+   box-shadow: rgba(255, 255, 127, .3) 0px 15px -15px inset,
+               rgba(255, 255, 127, .3) 15px 0px 15px inset;
+}
+
+.dg-cell-middle-center.light-bottom.light-right {
+   box-shadow: rgba(255, 255, 127, .3) 0px -15px 15px 0 inset,
+               rgba(255, 255, 127, .3) -15px 0 15px inset;
+}
+
+.dg-cell-middle-center.light-left.light-right {
+   box-shadow: rgba(255, 255, 127, .3) 15px 15px 0px inset,
+               rgba(255, 255, 127, .3) -15px 0 15px inset;
+}
+
+.dg-cell-middle-center.light-top.light-bottom.light-left {
+   box-shadow: rgba(255, 255, 127, .3) 0px 15px 15px inset,
+               rgba(255, 255, 127, .3) 0px 15px -15px inset,
+               rgba(255, 255, 127, .3) 15px 15px 0px inset;
+}
+
+.dg-cell-middle-center.light-top.light-bottom.light-right {
+   box-shadow: rgba(255, 255, 127, .3) 0px 15px 15px inset,
+               rgba(255, 255, 127, .3) 0px -15px 15px 0 inset,
+               rgba(255, 255, 127, .3) -15px 0 15px inset;
+}
+
+.dg-cell-middle-center.light-top.light-left.light-right {
+   box-shadow: rgba(255, 255, 127, .3) 0px 15px 15px inset,
+               rgba(255, 255, 127, .3) 15px 15px 0px inset,
+               rgba(255, 255, 127, .3) -15px 0 15px inset;
+}
+
+.dg-cell-middle-center.light-bottom.light-left.light-right {
+   box-shadow: rgba(255, 255, 127, .3) 0px -15px 15px 0 inset,
+               rgba(255, 255, 127, .3) 15px 15px 0px inset,
+               rgba(255, 255, 127, .3) -15px 0 15px inset;
+}
+
+.dg-cell-middle-center.light-top.light-bottom.light-left.light-right {
+   box-shadow: rgba(255, 255, 127, .3) 0px 15px 15px inset,
+               rgba(255, 255, 127, .3) 0px -15px 15px 0 inset,
+               rgba(255, 255, 127, .3) 15px 15px 0px inset,
+               rgba(255, 255, 127, .3) -15px 0 15px inset;
+}
