@@ -64,6 +64,7 @@ body {
 
 img.thumbnail {
     height: 200px;
+    max-width: 100%;
 }
 
 .overlay {

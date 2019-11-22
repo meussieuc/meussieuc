@@ -9,14 +9,14 @@
     <script src="scripts/utils.js"></script>
     <title>Random Gfycats</title>
     <script>
-        function getNewGfyWorker() {
+        function getNewSeekerWorker() {
             var worker = new Worker("scripts/seeker.js");
 
             worker.onmessage = function (event) {
                 var progress = JSON.parse(event.data);
                 renderProgress(progress);
                 if (!isNullOrUndefined(progress.newId))
-                    document.getElementById("placeholder").appendChild(getCard(GenType.GFYCAT, progress.newId));
+                    document.getElementById("placeholder").appendChild(getCard(startMessage.genType, progress.newId));
             }
 
             worker.onerror = function (event) {
@@ -27,21 +27,24 @@
         }
 
         function startWorker() {
-            gfyWorker.terminate();
+            seekerWorker.terminate();
 
-            gfyWorker = getNewGfyWorker();
+            seekerWorker = getNewSeekerWorker();
 
-            gfyWorker.postMessage(JSON.stringify(new StartMessage(
+            startMessage = new StartMessage(
                 $('#gentype').val(), 
-                $('#nbgfys').val())));
+                $('#nbgfys').val());
+
+            seekerWorker.postMessage(JSON.stringify(startMessage));
         }
 
         function terminateWorker() {
             console.info("Stopping worker");
-            gfyWorker.terminate();
+            seekerWorker.terminate();
         }
 
-        var gfyWorker = getNewGfyWorker();
+        var startMessage;
+        var seekerWorker = getNewSeekerWorker();
 
         function load() {
             populateSelect("gentype", GenType);

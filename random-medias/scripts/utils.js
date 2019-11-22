@@ -36,6 +36,15 @@ Array.prototype.random = function () {
     return this[Math.floor(Math.random() * this.length)];
 };
 
+Array.prototype.randoms = function (nb) {
+    var randoms = [];
+
+    for (let i = 0; i < nb; i++)
+        randoms.push(this.random());
+
+    return randoms;
+};
+
 // ----------------------------------------------------------------------------
 // GENERAL FUNCTIONS
 // ----------------------------------------------------------------------------
@@ -44,18 +53,22 @@ const isNullOrUndefined = function (obj) {
     return obj === undefined || obj === null;
 }
 
-const getAsync = function (url, success, failure) {
+const getAsync = function (url, isSpecificFailure = defaultIsSpecificFailure, success, failure) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
-    xhr.onload = function (e) {
+    xhr.onload = function (ev) {
         if (xhr.readyState === 4) {
-            if (xhr.status === 200)
-                success(xhr.response);
+            if (xhr.status === 200 && !isSpecificFailure(xhr.response))
+                success(xhr.response); // response url is passed in case of a redirection
             else
                 failure(xhr.statusText);
         }
     }
     xhr.send();
+}
+
+const defaultIsSpecificFailure = function(response) {
+    return false;
 }
 
 const formatPercent = function (number) {

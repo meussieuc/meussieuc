@@ -1,4 +1,4 @@
-importScripts("utils.js", "gfy-const.js");
+importScripts("utils.js", "gfy-const.js", "imgur-const.js");
 
 // ----------------------------------------------------------------------------
 // CLASSES
@@ -51,7 +51,10 @@ const addRandom = function (genType) {
     if (id === null)
         return;
 
-    getAsync(getThumbUrl(genType, id),
+    var thumbUrl = getThumbUrl(genType, id);
+
+    getAsync(thumbUrl,
+        isImgurFailure,
         thumb => {
             progress.found++;
             progress.requested++;
@@ -66,6 +69,10 @@ const addRandom = function (genType) {
         });
 }
 
+const isImgurFailure = function (response) {
+    return failureResponseLengths.includes(response.length);
+}
+
 const getId = function (genType) {
     switch (genType) {
         case GenType.GFYCAT:
@@ -77,10 +84,12 @@ const getId = function (genType) {
             // [a-z|A-Z|0-9|-|_]^11
             return "_M_WQotsW9E";
 
-        case GenType.GFYCAT:
+        case GenType.IMGUR:
             // [a-z|A-Z|0-9]^7
-            return "DEflzeC";
-            return `${adjectives.random().capitalizeFLetter()}${adjectives.random().capitalizeFLetter()}${animals.random().capitalizeFLetter()}`;
+            // return "DEflzeC";
+            // var length = Math.random() < .98 ? 7 : 6;
+            var length = Math.random() < .5 ? 7 : 6;
+            return idChars.randoms(length).join('');
 
         default:
             return null;
