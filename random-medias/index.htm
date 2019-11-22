@@ -10,7 +10,7 @@
     <title>Random Gfycats</title>
     <script>
         function getNewGfyWorker() {
-            var worker = new Worker("scripts/gfycat.js");
+            var worker = new Worker("scripts/seeker.js");
 
             worker.onmessage = function (event) {
                 var progress = JSON.parse(event.data);
@@ -46,7 +46,7 @@
         function load() {
             populateSelect("gentype", GenType);
         }
-    </script>
+        </script>
 </head>
 
 <body onload="load()">

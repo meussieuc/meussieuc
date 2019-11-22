@@ -69,10 +69,18 @@ const addRandom = function (genType) {
 const getId = function (genType) {
     switch (genType) {
         case GenType.GFYCAT:
-            return getRandomGfyAnimal();
+            // AdjectiveAdjectiveAnimal
+            // return "HandmadeFewBrontosaurus";
+            return `${adjectives.random().capitalizeFLetter()}${adjectives.random().capitalizeFLetter()}${animals.random().capitalizeFLetter()}`;
 
         case GenType.YOUTUBE:
-            return getRandomYtId();
+            // [a-z|A-Z|0-9|-|_]^11
+            return "_M_WQotsW9E";
+
+        case GenType.GFYCAT:
+            // [a-z|A-Z|0-9]^7
+            return "DEflzeC";
+            return `${adjectives.random().capitalizeFLetter()}${adjectives.random().capitalizeFLetter()}${animals.random().capitalizeFLetter()}`;
 
         default:
             return null;

@@ -4,7 +4,8 @@
 
 const GenType = Object.freeze({
     "GFYCAT": 0,
-    "YOUTUBE": 1
+    "YOUTUBE": 1,
+    "IMGUR": 2
 });
 
 const Action = Object.freeze({
@@ -139,6 +140,9 @@ const getThumbUrl = function (genType, id) {
             return `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
             // return `https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.ytimg.com%2Fvi%2F${id}%2Fmaxresdefault.jpg&f=1&nofb=1`;
 
+        case GenType.IMGUR:
+            return `https://i.imgur.com/${id}g.jpg`;
+
         default:
             return null;
     }
@@ -152,6 +156,9 @@ const getVidUrl = function (genType, id) {
 
         case GenType.YOUTUBE:
             return `https://youtube.com/embed/${id}`;
+
+        case GenType.IMGUR:
+            return `https://i.imgur.com/${id}.jpg`;
 
         default:
             return null;
