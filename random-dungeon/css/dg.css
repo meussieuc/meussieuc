@@ -12,6 +12,10 @@
    position: absolute;
 }
 
+.bw .dg-cell {
+   background: url(../images/dg-bw/floor-50.jpg);
+}
+
 .dg-cell td {
    margin: 0px;
    padding: 0px;
@@ -67,6 +71,40 @@
 .dg-cell-middle-left.door, .dg-cell-middle-right.door {
    background: url(../images/door-30.jpg) -10px -0px;
 }
+
+
+.bw .wall {
+   background: url(../images/dg-bw/wall-30.jpg) -10px -10px;
+}
+
+.bw .window {
+   background: url(../images/dg-bw/window-30.jpg) -10px -10px;
+}
+
+.bw .dg-cell-top-center.wall, .bw .dg-cell-bottom-center.wall {
+   background: url(../images/dg-bw/wall-30.jpg) 0px -10px;
+}
+
+.bw .dg-cell-middle-left.wall, .bw .dg-cell-middle-right.wall {
+   background: url(../images/dg-bw/wall-30.jpg) -10px -0px;
+}
+
+.bw .dg-cell-top-center.window, .bw .dg-cell-bottom-center.window {
+   background: url(../images/dg-bw/window-30.jpg) 0px -10px;
+}
+
+.bw .dg-cell-middle-left.window, .bw .dg-cell-middle-right.window {
+   background: url(../images/dg-bw/window-30.jpg) -10px -0px;
+}
+
+.bw .dg-cell-top-center.door, .bw .dg-cell-bottom-center.door {
+   background: url(../images/dg-bw/door-30.jpg) 0px -10px;
+}
+
+.bw .dg-cell-middle-left.door, .bw .dg-cell-middle-right.door {
+   background: url(../images/dg-bw/door-30.jpg) -10px -0px;
+}
+
 
 .dg-cell-middle-center.light-top {
    box-shadow: rgba(255, 255, 127, .3) 0px 15px 15px inset;
@@ -143,4 +181,21 @@
                rgba(255, 255, 127, .3) 0px -15px 15px 0 inset,
                rgba(255, 255, 127, .3) 15px 15px 0px inset,
                rgba(255, 255, 127, .3) -15px 0 15px inset;
+}
+
+.bw .dg-cell-middle-center.light-top,
+.bw .dg-cell-middle-center.light-bottom,
+.bw .dg-cell-middle-center.light-left,
+.bw .dg-cell-middle-center.light-right,
+.bw .dg-cell-middle-center.light-top.light-left,
+.bw .dg-cell-middle-center.light-top.light-right,
+.bw .dg-cell-middle-center.light-bottom.light-left,
+.bw .dg-cell-middle-center.light-bottom.light-right,
+.bw .dg-cell-middle-center.light-left.light-right,
+.bw .dg-cell-middle-center.light-top.light-bottom.light-left,
+.bw .dg-cell-middle-center.light-top.light-bottom.light-right,
+.bw .dg-cell-middle-center.light-top.light-left.light-right,
+.bw .dg-cell-middle-center.light-bottom.light-left.light-right,
+.bw .dg-cell-middle-center.light-top.light-bottom.light-left.light-right {
+   box-shadow: none;
 }

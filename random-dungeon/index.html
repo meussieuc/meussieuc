@@ -1,491 +1,552 @@
 <!DOCTYPE html>
 <html>
-   <head>
-      <title>Generator Test</title>
-      <link href="css/main.css" rel="stylesheet">
-      <link href="css/dg.css" rel="stylesheet">
-      <script type="text/javascript" src="linq.js_ver2.2.0.2/linq.js"></script>
-      <script src="scripts/jquery.js"></script>
-      <script src="scripts/main.js"></script>
-      <script src="scripts/baseClass.js"></script>
-      <script src="scripts/vector.js"></script>
-      <script src="scripts/cellDirection.js"></script>
-      <script src="scripts/cell.js"></script>
-      <script src="scripts/grid.js"></script>
-      <script src="scripts/uiFieldset.js"></script>
-      <script>
-         var genWorker;
-         var startTime;
-         var genDuration;
-         
-         // -------------
-         // receiveGenMsg
-         // -------------
-         var receiveGenMsg = function(event) {
-            switch (event.data.status) {
-               case "generating":
-                  render(event.data.renderedGrid, 
-                         event.data.htmlGridWidth, 
-                         event.data.htmlGridHeight);
-                  break;
-               case "done":
-                  endGen(event.data.renderedGrid, 
-                         event.data.htmlGridWidth, 
-                         event.data.htmlGridHeight);
-                  break;
-               case "error":
-                  addDebugLine(event.data.error);
-                  resetGenerator();
-                  break;
-               default:
-                  addDebugLine("Unexpected message from genWorker!");
-            }
-         };
-         
-         // --------------
-         // resetGenerator
-         // --------------
-         function resetGenerator() {
-            removeLoadingOver("#placeholder");
-            $("#btnGen").show();
-            $("#btnStop").hide();
-            
-            genWorker.terminate();
-            genWorker = undefined;
+
+<head>
+   <title>Generator Test</title>
+   <link href="css/main.css" rel="stylesheet">
+   <link href="css/dg.css" rel="stylesheet">
+   <script type="text/javascript" src="linq.js_ver2.2.0.2/linq.js"></script>
+   <script src="scripts/jquery.js"></script>
+   <script src="scripts/main.js"></script>
+   <script src="scripts/baseClass.js"></script>
+   <script src="scripts/vector.js"></script>
+   <script src="scripts/cellDirection.js"></script>
+   <script src="scripts/cell.js"></script>
+   <script src="scripts/grid.js"></script>
+   <script src="scripts/uiFieldset.js"></script>
+   <script>
+      var genWorker;
+      var startTime;
+      var genDuration;
+
+      // -------------
+      // receiveGenMsg
+      // -------------
+      var receiveGenMsg = function (event) {
+         switch (event.data.status) {
+            case "generating":
+               render(event.data.renderedGrid,
+                  event.data.htmlGridWidth,
+                  event.data.htmlGridHeight);
+               break;
+            case "done":
+               endGen(event.data.renderedGrid,
+                  event.data.htmlGridWidth,
+                  event.data.htmlGridHeight);
+               break;
+            case "error":
+               addDebugLine(event.data.error);
+               resetGenerator();
+               break;
+            default:
+               addDebugLine("Unexpected message from genWorker!");
          }
-         
-         // --------
-         // startGen
-         // --------
-         function startGen() {
-            if(typeof(Worker) === "undefined") {
-               addDebugLine("Sorry, your browser does not support Web Workers...");
-               return;
-            }
-            
-            if (typeof(genWorker) !== "undefined")
-               return;
-            
-            $("#btnGen").hide();
-            $("#btnStop").show();
-            addLoadingOver("#placeholder");
-            
-            startTime = Date.now();
-            genWorker = new Worker("scripts/genWorker.js");
-            
-            genWorker.onmessage = receiveGenMsg;
-            
-            genWorker.postMessage({ 
-               msg: "start", 
-               params: {
-                  type:                $("#gen-type").val(),
-                  width:               Number($("#grid-width").val()), 
-                  height:              Number($("#grid-height").val()), 
-                  corridorMinLength:   Number($("#corridor-minLength").val()), 
-                  corridorMaxLength:   Number($("#corridor-maxLength").val()),
-                  roomMinWidth:        Number($("#room-minWidth").val()),  
-                  roomMaxWidth:        Number($("#room-maxWidth").val()),  
-                  roomMinHeight:       Number($("#room-minHeight").val()),  
-                  roomMaxHeight:       Number($("#room-maxHeight").val()),  
-                  windowsOnlyOutside:  $("#windowsOnlyOutside").is(":checked"),  
-                  windowProb:          Number($("#windowProb").val()),
-                  mazeGen: {
-                     newSeedProb: Number($("#mazeGen-newSeedProb").val()),
-                     stopCondition: {
-                        maxIterations: $("#mazeGen-bMaxIterations").is(":checked") 
-                           ? Number($("#mazeGen-nMaxIterations").val()) 
-                           : null,
-                        gridArea: $("#mazeGen-bGridArea").is(":checked") 
-                           ? Number($("#mazeGen-nGridArea").val()) / 100
-                           : null,
-                        seedsCount: $("#mazeGen-bSeedsCount").is(":checked") 
-                           ? Number($("#mazeGen-nSeedsCount").val()) 
-                           : null,
-                        createdSeeds: $("#mazeGen-bCreatedSeeds").is(":checked") 
-                           ? Number($("#mazeGen-nCreatedSeeds").val()) 
-                           : null
-                     }
-                  },  
-                  roomsGen: {
-                     mergeCorridors: $("#roomsGen-mergeCorridors").is(":checked"),
-                     loopProb:       Number($("#roomsGen-LoopProb").val()),
-                     newSeedProb:    Number($("#roomsGen-newSeedProb").val()), 
-                     stopCondition: {
-                        maxIterations: $("#roomsGen-bMaxIterations").is(":checked") 
-                           ? Number($("#roomsGen-nMaxIterations").val()) 
-                           : null,
-                        gridArea: $("#roomsGen-bGridArea").is(":checked") 
-                           ? Number($("#roomsGen-nGridArea").val()) / 100
-                           : null,
-                        seedsCount: $("#roomsGen-bSeedsCount").is(":checked") 
-                           ? Number($("#roomsGen-nSeedsCount").val()) 
-                           : null,
-                        createdSeeds: $("#roomsGen-bCreatedSeeds").is(":checked") 
-                           ? Number($("#roomsGen-nCreatedSeeds").val()) 
-                           : null
-                     },
-                     typeProbs: [
-                        { value: "room-room",              prob: Number($("#roomsGen-genType1-prob").val()) },
-                        { value: "room-corridor-room",     prob: Number($("#roomsGen-genType2-prob").val()) },
-                        { value: "corridor-room",          prob: Number($("#roomsGen-genType3-prob").val()) },
-                        { value: "corridor-corridor-room", prob: Number($("#roomsGen-genType4-prob").val()) }
-                     ]
+      };
+
+      // --------------
+      // resetGenerator
+      // --------------
+      function resetGenerator() {
+         removeLoadingOver("#placeholder");
+         $("#btnGen").show();
+         $("#btnStop").hide();
+
+         genWorker.terminate();
+         genWorker = undefined;
+      }
+
+      // --------
+      // startGen
+      // --------
+      function startGen() {
+         if (typeof (Worker) === "undefined") {
+            addDebugLine("Sorry, your browser does not support Web Workers...");
+            return;
+         }
+
+         if (typeof (genWorker) !== "undefined")
+            return;
+
+         $("#btnGen").hide();
+         $("#btnStop").show();
+         addLoadingOver("#placeholder");
+
+         startTime = Date.now();
+         genWorker = new Worker("scripts/genWorker.js");
+
+         genWorker.onmessage = receiveGenMsg;
+
+         genWorker.postMessage({
+            msg: "start",
+            params: {
+               type: $("#gen-type").val(),
+               width: Number($("#grid-width").val()),
+               height: Number($("#grid-height").val()),
+               corridorMinLength: Number($("#corridor-minLength").val()),
+               corridorMaxLength: Number($("#corridor-maxLength").val()),
+               roomMinWidth: Number($("#room-minWidth").val()),
+               roomMaxWidth: Number($("#room-maxWidth").val()),
+               roomMinHeight: Number($("#room-minHeight").val()),
+               roomMaxHeight: Number($("#room-maxHeight").val()),
+               windowsOnlyOutside: $("#windowsOnlyOutside").is(":checked"),
+               windowProb: Number($("#windowProb").val()),
+               mazeGen: {
+                  newSeedProb: Number($("#mazeGen-newSeedProb").val()),
+                  stopCondition: {
+                     maxIterations: $("#mazeGen-bMaxIterations").is(":checked") ?
+                        Number($("#mazeGen-nMaxIterations").val()) :
+                        null,
+                     gridArea: $("#mazeGen-bGridArea").is(":checked") ?
+                        Number($("#mazeGen-nGridArea").val()) / 100 :
+                        null,
+                     seedsCount: $("#mazeGen-bSeedsCount").is(":checked") ?
+                        Number($("#mazeGen-nSeedsCount").val()) :
+                        null,
+                     createdSeeds: $("#mazeGen-bCreatedSeeds").is(":checked") ?
+                        Number($("#mazeGen-nCreatedSeeds").val()) :
+                        null
                   }
-               } 
-            });
-         }
-         
-         // ------
-         // endGen
-         // ------
-         function endGen(renderedGrid, htmlGridWidth, htmlGridHeight) {
-            genDuration = Date.now() - startTime;
-            
-            resetGenerator();
-            
-            $("#placeholder").width(htmlGridWidth);
-            $("#placeholder").height(htmlGridHeight);
-            
-            $("#placeholder").html(renderedGrid);
-            addDebugLine(`Generation duration: ${genDuration / 1000} sec`);
-         }
-         
-         // -------
-         // stopGen
-         // -------
-         function stopGen() {
-            genDuration = Date.now() - startTime;
-            resetGenerator();
-            addDebugLine(`Generation stopped after ${genDuration / 1000} sec`);
-         }
-         
-         // ------
-         // render
-         // ------
-         function render(renderedGrid, htmlGridWidth, htmlGridHeight) {
-            $("#placeholder").width(htmlGridWidth);
-            $("#placeholder").height(htmlGridHeight);
-            
-            $("#placeholder").html(renderedGrid);
-            addDebugLine("still generating...");
-         }
-         
-         // ------------------
-         // adjustUIVisibility
-         // ------------------
-         function adjustUIVisibility() {
-            var genType = $("#gen-type").val();
-            
-            switch (genType) {
-               case "maze":
-                  $(".mazeSpecific").show();
-                  $(".roomsSpecific").hide();
-                  break;
-                  
-               case "rooms":
-                  $(".mazeSpecific").hide();
-                  $(".roomsSpecific").show();
-                  break;
-                  
-               case "mixed":
-                  $(".mazeSpecific").show();
-                  $(".roomsSpecific").show();
-                  break;
-                  
-               default:
-                  throw new Error("Unknown generation type");
+               },
+               roomsGen: {
+                  mergeCorridors: $("#roomsGen-mergeCorridors").is(":checked"),
+                  loopProb: Number($("#roomsGen-LoopProb").val()),
+                  newSeedProb: Number($("#roomsGen-newSeedProb").val()),
+                  stopCondition: {
+                     maxIterations: $("#roomsGen-bMaxIterations").is(":checked") ?
+                        Number($("#roomsGen-nMaxIterations").val()) :
+                        null,
+                     gridArea: $("#roomsGen-bGridArea").is(":checked") ?
+                        Number($("#roomsGen-nGridArea").val()) / 100 :
+                        null,
+                     seedsCount: $("#roomsGen-bSeedsCount").is(":checked") ?
+                        Number($("#roomsGen-nSeedsCount").val()) :
+                        null,
+                     createdSeeds: $("#roomsGen-bCreatedSeeds").is(":checked") ?
+                        Number($("#roomsGen-nCreatedSeeds").val()) :
+                        null
+                  },
+                  typeProbs: [{
+                        value: "room-room",
+                        prob: Number($("#roomsGen-genType1-prob").val())
+                     },
+                     {
+                        value: "room-corridor-room",
+                        prob: Number($("#roomsGen-genType2-prob").val())
+                     },
+                     {
+                        value: "corridor-room",
+                        prob: Number($("#roomsGen-genType3-prob").val())
+                     },
+                     {
+                        value: "corridor-corridor-room",
+                        prob: Number($("#roomsGen-genType4-prob").val())
+                     }
+                  ]
+               }
             }
-            
-            if ($("#mazeGen-bMaxIterations").is(":checked"))
-               $(".mazeGen-bMaxIterations-visibility").show();
-            else
-               $(".mazeGen-bMaxIterations-visibility").hide();
-            
-            if ($("#mazeGen-bGridArea").is(":checked"))
-               $(".mazeGen-bGridArea-visibility").show();
-            else
-               $(".mazeGen-bGridArea-visibility").hide();
-            
-            if ($("#mazeGen-bSeedsCount").is(":checked"))
-               $(".mazeGen-bSeedsCount-visibility").show();
-            else
-               $(".mazeGen-bSeedsCount-visibility").hide();
-            
-            if ($("#mazeGen-bCreatedSeeds").is(":checked"))
-               $(".mazeGen-bCreatedSeeds-visibility").show();
-            else
-               $(".mazeGen-bCreatedSeeds-visibility").hide();
-            
-            if ($("#roomsGen-bMaxIterations").is(":checked"))
-               $(".roomsGen-bMaxIterations-visibility").show();
-            else
-               $(".roomsGen-bMaxIterations-visibility").hide();
-            
-            if ($("#roomsGen-bGridArea").is(":checked"))
-               $(".roomsGen-bGridArea-visibility").show();
-            else
-               $(".roomsGen-bGridArea-visibility").hide();
-            
-            if ($("#roomsGen-bSeedsCount").is(":checked"))
-               $(".roomsGen-bSeedsCount-visibility").show();
-            else
-               $(".roomsGen-bSeedsCount-visibility").hide();
-            
-            if ($("#roomsGen-bCreatedSeeds").is(":checked"))
-               $(".roomsGen-bCreatedSeeds-visibility").show();
-            else
-               $(".roomsGen-bCreatedSeeds-visibility").hide();
-         }
-      
-         // ------------------------------
-         // Wait for the page to be loaded
-         // ------------------------------
-         $( document ).ready(function() {
-            $("#btnGen").click(startGen);
-            $("#btnStop").click(stopGen).hide();
-            $("#gen-type").change(adjustUIVisibility);
-            $("#mazeGen-bMaxIterations").change(adjustUIVisibility);
-            $("#mazeGen-bGridArea").change(adjustUIVisibility);
-            $("#mazeGen-bSeedsCount").change(adjustUIVisibility);
-            $("#mazeGen-bCreatedSeeds").change(adjustUIVisibility);
-            $("#roomsGen-bMaxIterations").change(adjustUIVisibility);
-            $("#roomsGen-bGridArea").change(adjustUIVisibility);
-            $("#roomsGen-bSeedsCount").change(adjustUIVisibility);
-            $("#roomsGen-bCreatedSeeds").change(adjustUIVisibility);
-            
-            var fsParameters = new UIFieldset("fsParameters", "fsContent");
-            var fsGrid       = new UIFieldset("fsGrid",       "fsContent");
-            var fsCorridor   = new UIFieldset("fsCorridor",   "fsContent");
-            var fsRoom       = new UIFieldset("fsRoom",       "fsContent");
-            var fsGenerator  = new UIFieldset("fsGenerator",  "fsContent");
-            var fsRnC        = new UIFieldset("fsRnC",        "fsContent");
-            var fsMaze       = new UIFieldset("fsMaze",       "fsContent");
-            
-            adjustUIVisibility();
          });
-      </script>
-      <style>
-         #fsParameters {
-            text-align: left;
+      }
+
+      // ------
+      // endGen
+      // ------
+      function endGen(renderedGrid, htmlGridWidth, htmlGridHeight) {
+         genDuration = Date.now() - startTime;
+
+         resetGenerator();
+
+         $("#placeholder").width(htmlGridWidth);
+         $("#placeholder").height(htmlGridHeight);
+
+         $("#placeholder").html(renderedGrid);
+         addDebugLine(`Generation duration: ${genDuration / 1000} sec`);
+      }
+
+      // -------
+      // stopGen
+      // -------
+      function stopGen() {
+         genDuration = Date.now() - startTime;
+         resetGenerator();
+         addDebugLine(`Generation stopped after ${genDuration / 1000} sec`);
+      }
+
+      // ------
+      // render
+      // ------
+      function render(renderedGrid, htmlGridWidth, htmlGridHeight) {
+         $("#placeholder").width(htmlGridWidth);
+         $("#placeholder").height(htmlGridHeight);
+
+         $("#placeholder").html(renderedGrid);
+         addDebugLine("still generating...");
+      }
+
+      // ------------------
+      // adjustUIVisibility
+      // ------------------
+      function adjustUIVisibility() {
+         var genType = $("#gen-type").val();
+
+         switch (genType) {
+            case "maze":
+               $(".mazeSpecific").show();
+               $(".roomsSpecific").hide();
+               break;
+
+            case "rooms":
+               $(".mazeSpecific").hide();
+               $(".roomsSpecific").show();
+               break;
+
+            case "mixed":
+               $(".mazeSpecific").show();
+               $(".roomsSpecific").show();
+               break;
+
+            default:
+               throw new Error("Unknown generation type");
          }
-      
-         #btnGen, #btnStop {
-            width: 190px;
-            font-size: 2em;
-            padding: 5px 20px;
-         }
-         
-         #btnGen {
-            background-color: #82a582;
-            border: 1px solid #007700;
-            color: #007e00;
-         }
-         
-         #btnStop {
-            background-color: #a58282;
-            border: 1px solid #770000;
-            color: #7e0000;
-         }
-         
-         #btnGen:disabled, #btnStop:disabled {
-            background-color: #ddd;
-            color: #999;
-            border: 1px solid #999;
-         }
-      </style>
-   </head>
-   <body class="center">
-      <fieldset id="debugPanel">
-         <legend>Debug</legend>
-         <textarea id="debug" readonly></textarea>
-      </fieldset>
-      <br/>
-      <fieldset id="fsParameters" class="parameters">
-         <legend>Parameters</legend>
-         <div class="fsContent">
-            <div>
-               <fieldset id="fsGrid" class="parameters">
-                  <legend>Grid</legend>
-                  <table class="fsContent">
-                     <tr>
-                        <td class="label">Width</td>
-                        <td><input id="grid-width" type="number" step="1" value="35" min="1" max="100"></input></td>
-                     </tr>
-                     <tr>
-                        <td class="label">Height</td>
-                        <td><input id="grid-height" type="number" step="1" value="19" min="1" max="100"></input></td>
-                     </tr>
-                  </table>
-               </fieldset>
-               <fieldset id="fsCorridor" class="parameters">
-                  <legend>Corridor</legend>
-                  <table class="fsContent">
-                     <tr>
-                        <td class="label">Min length</td>
-                        <td><input id="corridor-minLength" type="number" step="1" value="1" min="1" max="35"></input></td>
-                     </tr>
-                     <tr>
-                        <td class="label">Max length</td>
-                        <td><input id="corridor-maxLength" type="number" step="1" value="10" min="1" max="35"></input></td>
-                     </tr>
-                  </table>
-               </fieldset>
-               <fieldset id="fsRoom" class="parameters roomsSpecific">
-                  <legend>Room</legend>
-                  <table class="fsContent">
-                     <tr>
-                        <td class="label">Min width</td>
-                        <td><input id="room-minWidth" type="number" step="1" value="3" min="3" max="20"></input></td>
-                     </tr>
-                     <tr>
-                        <td class="label">Max width</td>
-                        <td><input id="room-maxWidth" type="number" step="1" value="5" min="3" max="20"></input></td>
-                     </tr>
-                     <tr>
-                        <td class="label">Min height</td>
-                        <td><input id="room-minHeight" type="number" step="1" value="3" min="3" max="20"></input></td>
-                     </tr>
-                     <tr>
-                        <td class="label">Max height</td>
-                        <td><input id="room-maxHeight" type="number" step="1" value="5" min="3" max="20"></input></td>
-                     </tr>
-                  </table>
-                  <div class="std-block"><input id="windowsOnlyOutside" type="checkbox" checked></input><label for="windowsOnlyOutside">Windows only outside</label></div>
-                  <div class="std-block"><span class="label">Window prob</span><input id="windowProb" type="number" step=".01" value=".5" min="0" max="1"></input></div>
-               </fieldset>
-            </div>
-            <fieldset id="fsGenerator" class="parameters">
-               <legend>Generator</legend>
-               <div class="fsContent">
-                  <div class="center">
-                     <span class="label">Type</span>
-                     <select id="gen-type">
-                       <option value="maze">Maze</option>
-                       <option value="rooms">Rooms and corridors</option>
-                       <option value="mixed" selected>Mixed</option>
-                     </select>
-                  </div>
-                  <fieldset id="fsRnC" class="parameters roomsSpecific">
-                     <legend>Rooms and corridors</legend>
-                     <div class="fsContent">
-                        <fieldset class="parameters">
-                           <legend>Stop condition</legend>
-                           <table>
-                              <tr>
-                                 <td class="std-block"><input id="roomsGen-bMaxIterations" type="checkbox" checked></input><label for="roomsGen-bMaxIterations">Iterations count</label></td>
-                                 <td class="roomsGen-bMaxIterations-visibility">>=</td>
-                                 <td class="roomsGen-bMaxIterations-visibility"><input id="roomsGen-nMaxIterations" type="number" step="1" value="1000" min="0"></input></td>
-                              </tr>
-                              <tr>
-                                 <td colspan="3" class="center">OR</td>
-                              </tr>
-                              <tr>
-                                 <td class="std-block"><input id="roomsGen-bGridArea" type="checkbox" checked></input><label for="roomsGen-bGridArea">Grid area</label></td>
-                                 <td class="roomsGen-bGridArea-visibility">>=</td>
-                                 <td class="roomsGen-bGridArea-visibility"><input id="roomsGen-nGridArea" type="number" step="1" value="25" min="0" max="100"></input>&nbsp;%</td>
-                              </tr>
-                              <tr>
-                                 <td class="std-block"><input id="roomsGen-bSeedsCount" type="checkbox"></input><label for="roomsGen-bSeedsCount">Seeds count</label></td>
-                                 <td class="roomsGen-bSeedsCount-visibility">&nbsp;=&nbsp;</td>
-                                 <td class="roomsGen-bSeedsCount-visibility"><input id="roomsGen-nSeedsCount" type="number" step="1" value="1" min="0"></input></td>
-                              </tr>
-                              <tr>
-                                 <td class="std-block"><input id="roomsGen-bCreatedSeeds" type="checkbox"></input><label for="roomsGen-bCreatedSeeds">Created seeds</label></td>
-                                 <td class="roomsGen-bCreatedSeeds-visibility">>=</td>
-                                 <td class="roomsGen-bCreatedSeeds-visibility"><input id="roomsGen-nCreatedSeeds" type="number" step="1" value="1" min="0"></input></td>
-                              </tr>
-                           </table>
-                        </fieldset>  
-                        <br/>
-                        <fieldset class="parameters">
-                           <legend>Generation type probs</legend>
-                           <table>
-                              <tr>
-                                 <td class="label">
-                                    Room->Room
-                                 </td>
-                                 <td>
-                                    <input id="roomsGen-genType1-prob" type="number" step=".001" value=".25" min="0" max="1"></input>
-                                 </td>
-                              </tr>
-                              <tr>
-                                 <td class="label">
-                                    Room->Corridor->Room
-                                 </td>
-                                 <td>
-                                    <input id="roomsGen-genType2-prob" type="number" step=".001" value=".75" min="0" max="1"></input>
-                                 </td>
-                              </tr>
-                              <tr>
-                                 <td class="label">
-                                    Corridor->Room
-                                 </td>
-                                 <td>
-                                    <input id="roomsGen-genType3-prob" type="number" step=".001" value="0" min="0" max="1"></input>
-                                 </td>
-                              </tr>
-                              <tr>
-                                 <td class="label">
-                                    Corridor->Corridor->Room
-                                 </td>
-                                 <td>
-                                    <input id="roomsGen-genType4-prob" type="number" step=".001" value="0" min="0" max="1"></input>
-                                 </td>
-                              </tr>
-                           </table>
-                        </fieldset>
-                        <br/>
-                        <div class="std-block">
-                           <table class="std-block">
-                              <tr><td class="label">Loop prob</td><td><input id="roomsGen-LoopProb" type="number" step=".01" value=".1" min="0" max="1"></input></td></tr>
-                              <tr><td class="label">New seed prob</td><td><input id="roomsGen-newSeedProb" type="number" step=".001" value=".9" min="0" max="1"></input></td></tr>
-                           </table>
-                           <br/>
-                           <input id="roomsGen-mergeCorridors" type="checkbox" checked></input><label for="roomsGen-mergeCorridors">Merge when corridors hit</label>
-                        </div>
-                     </div>
-                  </fieldset>
-                  <fieldset id="fsMaze" class="parameters mazeSpecific">
-                     <legend>Maze</legend>
-                     <div class="fsContent">
-                        <fieldset class="parameters">
-                           <legend>Stop condition</legend>
-                           <table>
-                              <tr>
-                                 <td class="std-block"><input id="mazeGen-bMaxIterations" type="checkbox"></input><label for="mazeGen-bMaxIterations">Iterations count</label></td>
-                                 <td class="mazeGen-bMaxIterations-visibility">>=</td>
-                                 <td class="mazeGen-bMaxIterations-visibility"><input id="mazeGen-nMaxIterations" type="number" step="1" value="1000" min="0"></input></td>
-                              </tr>
-                              <tr>
-                                 <td colspan="3" class="center">OR</td>
-                              </tr>
-                              <tr>
-                                 <td class="std-block"><input id="mazeGen-bGridArea" type="checkbox" checked></input><label for="mazeGen-bGridArea">Grid area</label></td>
-                                 <td class="mazeGen-bGridArea-visibility">>=</td>
-                                 <td class="mazeGen-bGridArea-visibility"><input id="mazeGen-nGridArea" type="number" step="1" value="100" min="0" max="100"></input>&nbsp;%</td>
-                              </tr>
-                              <tr>
-                                 <td class="std-block"><input id="mazeGen-bSeedsCount" type="checkbox" checked></input><label for="mazeGen-bSeedsCount">Seeds count</label></td>
-                                 <td class="mazeGen-bSeedsCount-visibility">&nbsp;=&nbsp;</td>
-                                 <td class="mazeGen-bSeedsCount-visibility"><input id="mazeGen-nSeedsCount" type="number" step="1" value="1" min="0"></input></td>
-                              </tr>
-                              <tr>
-                                 <td class="std-block"><input id="mazeGen-bCreatedSeeds" type="checkbox"></input><label for="mazeGen-bCreatedSeeds">Created seeds</label></td>
-                                 <td class="mazeGen-bCreatedSeeds-visibility">>=</td>
-                                 <td class="mazeGen-bCreatedSeeds-visibility"><input id="mazeGen-nCreatedSeeds" type="number" step="1" value="1" min="0"></input></td>
-                              </tr>
-                           </table>
-                        </fieldset>  
-                        <br/> 
-                        <div class="std-block"><span class="label">New seed prob</span><input id="mazeGen-newSeedProb" type="number" step=".001" value=".9" min="0" max="1"></input></div>
-                     </div>
-                  </fieldset>
-               </div>
+
+         if ($("#mazeGen-bMaxIterations").is(":checked"))
+            $(".mazeGen-bMaxIterations-visibility").show();
+         else
+            $(".mazeGen-bMaxIterations-visibility").hide();
+
+         if ($("#mazeGen-bGridArea").is(":checked"))
+            $(".mazeGen-bGridArea-visibility").show();
+         else
+            $(".mazeGen-bGridArea-visibility").hide();
+
+         if ($("#mazeGen-bSeedsCount").is(":checked"))
+            $(".mazeGen-bSeedsCount-visibility").show();
+         else
+            $(".mazeGen-bSeedsCount-visibility").hide();
+
+         if ($("#mazeGen-bCreatedSeeds").is(":checked"))
+            $(".mazeGen-bCreatedSeeds-visibility").show();
+         else
+            $(".mazeGen-bCreatedSeeds-visibility").hide();
+
+         if ($("#roomsGen-bMaxIterations").is(":checked"))
+            $(".roomsGen-bMaxIterations-visibility").show();
+         else
+            $(".roomsGen-bMaxIterations-visibility").hide();
+
+         if ($("#roomsGen-bGridArea").is(":checked"))
+            $(".roomsGen-bGridArea-visibility").show();
+         else
+            $(".roomsGen-bGridArea-visibility").hide();
+
+         if ($("#roomsGen-bSeedsCount").is(":checked"))
+            $(".roomsGen-bSeedsCount-visibility").show();
+         else
+            $(".roomsGen-bSeedsCount-visibility").hide();
+
+         if ($("#roomsGen-bCreatedSeeds").is(":checked"))
+            $(".roomsGen-bCreatedSeeds-visibility").show();
+         else
+            $(".roomsGen-bCreatedSeeds-visibility").hide();
+      }
+
+      // -------
+      // setLook
+      // -------
+      function setLook() {
+         var placeholder = $("#placeholder");
+         $("#selLook option").toArray().forEach((option, index, array) => placeholder.removeClass($(option).val()));
+         placeholder.addClass($("#selLook").val());
+      }
+      // ------------------------------
+      // Wait for the page to be loaded
+      // ------------------------------
+      $(document).ready(function () {
+         $("#btnGen").click(startGen);
+         $("#btnStop").click(stopGen).hide();
+         $("#gen-type").change(adjustUIVisibility);
+         $("#mazeGen-bMaxIterations").change(adjustUIVisibility);
+         $("#mazeGen-bGridArea").change(adjustUIVisibility);
+         $("#mazeGen-bSeedsCount").change(adjustUIVisibility);
+         $("#mazeGen-bCreatedSeeds").change(adjustUIVisibility);
+         $("#roomsGen-bMaxIterations").change(adjustUIVisibility);
+         $("#roomsGen-bGridArea").change(adjustUIVisibility);
+         $("#roomsGen-bSeedsCount").change(adjustUIVisibility);
+         $("#roomsGen-bCreatedSeeds").change(adjustUIVisibility);
+
+         var fsParameters = new UIFieldset("fsParameters", "fsContent");
+         var fsGrid = new UIFieldset("fsGrid", "fsContent");
+         var fsCorridor = new UIFieldset("fsCorridor", "fsContent");
+         var fsRoom = new UIFieldset("fsRoom", "fsContent");
+         var fsGenerator = new UIFieldset("fsGenerator", "fsContent");
+         var fsRnC = new UIFieldset("fsRnC", "fsContent");
+         var fsMaze = new UIFieldset("fsMaze", "fsContent");
+
+         adjustUIVisibility();
+      });
+   </script>
+   <style>
+      #fsParameters {
+         text-align: left;
+      }
+
+      #btnGen,
+      #btnStop {
+         width: 190px;
+         font-size: 2em;
+         padding: 5px 20px;
+      }
+
+      #btnGen {
+         background-color: #82a582;
+         border: 1px solid #007700;
+         color: #007e00;
+      }
+
+      #btnStop {
+         background-color: #a58282;
+         border: 1px solid #770000;
+         color: #7e0000;
+      }
+
+      #btnGen:disabled,
+      #btnStop:disabled {
+         background-color: #ddd;
+         color: #999;
+         border: 1px solid #999;
+      }
+   </style>
+</head>
+
+<body class="center">
+   <fieldset id="debugPanel">
+      <legend>Debug</legend>
+      <textarea id="debug" readonly></textarea>
+   </fieldset>
+   <br />
+   <fieldset id="fsParameters" class="parameters">
+      <legend>Parameters</legend>
+      <div class="fsContent">
+         <div>
+            <fieldset id="fsGrid" class="parameters">
+               <legend>Grid</legend>
+               <table class="fsContent">
+                  <tr>
+                     <td class="label">Width</td>
+                     <td><input id="grid-width" type="number" step="1" value="35" min="1" max="100"></input></td>
+                  </tr>
+                  <tr>
+                     <td class="label">Height</td>
+                     <td><input id="grid-height" type="number" step="1" value="19" min="1" max="100"></input></td>
+                  </tr>
+               </table>
+            </fieldset>
+            <fieldset id="fsCorridor" class="parameters">
+               <legend>Corridor</legend>
+               <table class="fsContent">
+                  <tr>
+                     <td class="label">Min length</td>
+                     <td><input id="corridor-minLength" type="number" step="1" value="1" min="1" max="35"></input></td>
+                  </tr>
+                  <tr>
+                     <td class="label">Max length</td>
+                     <td><input id="corridor-maxLength" type="number" step="1" value="10" min="1" max="35"></input></td>
+                  </tr>
+               </table>
+            </fieldset>
+            <fieldset id="fsRoom" class="parameters roomsSpecific">
+               <legend>Room</legend>
+               <table class="fsContent">
+                  <tr>
+                     <td class="label">Min width</td>
+                     <td><input id="room-minWidth" type="number" step="1" value="3" min="3" max="20"></input></td>
+                  </tr>
+                  <tr>
+                     <td class="label">Max width</td>
+                     <td><input id="room-maxWidth" type="number" step="1" value="5" min="3" max="20"></input></td>
+                  </tr>
+                  <tr>
+                     <td class="label">Min height</td>
+                     <td><input id="room-minHeight" type="number" step="1" value="3" min="3" max="20"></input></td>
+                  </tr>
+                  <tr>
+                     <td class="label">Max height</td>
+                     <td><input id="room-maxHeight" type="number" step="1" value="5" min="3" max="20"></input></td>
+                  </tr>
+               </table>
+               <div class="std-block"><input id="windowsOnlyOutside" type="checkbox" checked></input><label
+                     for="windowsOnlyOutside">Windows only outside</label></div>
+               <div class="std-block"><span class="label">Window prob</span><input id="windowProb" type="number"
+                     step=".01" value=".5" min="0" max="1"></input></div>
             </fieldset>
          </div>
-         <button id="btnGen">Generate</button>
-         <button id="btnStop">Stop</button>
-      </fieldset>
-      <div id="placeholder" class="dg-grid"></div>
-   </body>
+         <fieldset id="fsGenerator" class="parameters">
+            <legend>Generator</legend>
+            <div class="fsContent">
+               <div class="center">
+                  <span class="label">Type</span>
+                  <select id="gen-type">
+                     <option value="maze">Maze</option>
+                     <option value="rooms">Rooms and corridors</option>
+                     <option value="mixed" selected>Mixed</option>
+                  </select>
+               </div>
+               <fieldset id="fsRnC" class="parameters roomsSpecific">
+                  <legend>Rooms and corridors</legend>
+                  <div class="fsContent">
+                     <fieldset class="parameters">
+                        <legend>Stop condition</legend>
+                        <table>
+                           <tr>
+                              <td class="std-block"><input id="roomsGen-bMaxIterations" type="checkbox"
+                                    checked></input><label for="roomsGen-bMaxIterations">Iterations count</label></td>
+                              <td class="roomsGen-bMaxIterations-visibility">>=</td>
+                              <td class="roomsGen-bMaxIterations-visibility"><input id="roomsGen-nMaxIterations"
+                                    type="number" step="1" value="1000" min="0"></input></td>
+                           </tr>
+                           <tr>
+                              <td colspan="3" class="center">OR</td>
+                           </tr>
+                           <tr>
+                              <td class="std-block"><input id="roomsGen-bGridArea" type="checkbox"
+                                    checked></input><label for="roomsGen-bGridArea">Grid area</label></td>
+                              <td class="roomsGen-bGridArea-visibility">>=</td>
+                              <td class="roomsGen-bGridArea-visibility"><input id="roomsGen-nGridArea" type="number"
+                                    step="1" value="25" min="0" max="100"></input>&nbsp;%</td>
+                           </tr>
+                           <tr>
+                              <td class="std-block"><input id="roomsGen-bSeedsCount" type="checkbox"></input><label
+                                    for="roomsGen-bSeedsCount">Seeds count</label></td>
+                              <td class="roomsGen-bSeedsCount-visibility">&nbsp;=&nbsp;</td>
+                              <td class="roomsGen-bSeedsCount-visibility"><input id="roomsGen-nSeedsCount" type="number"
+                                    step="1" value="1" min="0"></input></td>
+                           </tr>
+                           <tr>
+                              <td class="std-block"><input id="roomsGen-bCreatedSeeds" type="checkbox"></input><label
+                                    for="roomsGen-bCreatedSeeds">Created seeds</label></td>
+                              <td class="roomsGen-bCreatedSeeds-visibility">>=</td>
+                              <td class="roomsGen-bCreatedSeeds-visibility"><input id="roomsGen-nCreatedSeeds"
+                                    type="number" step="1" value="1" min="0"></input></td>
+                           </tr>
+                        </table>
+                     </fieldset>
+                     <br />
+                     <fieldset class="parameters">
+                        <legend>Generation type probs</legend>
+                        <table>
+                           <tr>
+                              <td class="label">
+                                 Room->Room
+                              </td>
+                              <td>
+                                 <input id="roomsGen-genType1-prob" type="number" step=".001" value=".25" min="0"
+                                    max="1"></input>
+                              </td>
+                           </tr>
+                           <tr>
+                              <td class="label">
+                                 Room->Corridor->Room
+                              </td>
+                              <td>
+                                 <input id="roomsGen-genType2-prob" type="number" step=".001" value=".75" min="0"
+                                    max="1"></input>
+                              </td>
+                           </tr>
+                           <tr>
+                              <td class="label">
+                                 Corridor->Room
+                              </td>
+                              <td>
+                                 <input id="roomsGen-genType3-prob" type="number" step=".001" value="0" min="0"
+                                    max="1"></input>
+                              </td>
+                           </tr>
+                           <tr>
+                              <td class="label">
+                                 Corridor->Corridor->Room
+                              </td>
+                              <td>
+                                 <input id="roomsGen-genType4-prob" type="number" step=".001" value="0" min="0"
+                                    max="1"></input>
+                              </td>
+                           </tr>
+                        </table>
+                     </fieldset>
+                     <br />
+                     <div class="std-block">
+                        <table class="std-block">
+                           <tr>
+                              <td class="label">Loop prob</td>
+                              <td><input id="roomsGen-LoopProb" type="number" step=".01" value=".1" min="0"
+                                    max="1"></input></td>
+                           </tr>
+                           <tr>
+                              <td class="label">New seed prob</td>
+                              <td><input id="roomsGen-newSeedProb" type="number" step=".001" value=".9" min="0"
+                                    max="1"></input></td>
+                           </tr>
+                        </table>
+                        <br />
+                        <input id="roomsGen-mergeCorridors" type="checkbox" checked></input><label
+                           for="roomsGen-mergeCorridors">Merge when corridors hit</label>
+                     </div>
+                  </div>
+               </fieldset>
+               <fieldset id="fsMaze" class="parameters mazeSpecific">
+                  <legend>Maze</legend>
+                  <div class="fsContent">
+                     <fieldset class="parameters">
+                        <legend>Stop condition</legend>
+                        <table>
+                           <tr>
+                              <td class="std-block"><input id="mazeGen-bMaxIterations" type="checkbox"></input><label
+                                    for="mazeGen-bMaxIterations">Iterations count</label></td>
+                              <td class="mazeGen-bMaxIterations-visibility">>=</td>
+                              <td class="mazeGen-bMaxIterations-visibility"><input id="mazeGen-nMaxIterations"
+                                    type="number" step="1" value="1000" min="0"></input></td>
+                           </tr>
+                           <tr>
+                              <td colspan="3" class="center">OR</td>
+                           </tr>
+                           <tr>
+                              <td class="std-block"><input id="mazeGen-bGridArea" type="checkbox" checked></input><label
+                                    for="mazeGen-bGridArea">Grid area</label></td>
+                              <td class="mazeGen-bGridArea-visibility">>=</td>
+                              <td class="mazeGen-bGridArea-visibility"><input id="mazeGen-nGridArea" type="number"
+                                    step="1" value="100" min="0" max="100"></input>&nbsp;%</td>
+                           </tr>
+                           <tr>
+                              <td class="std-block"><input id="mazeGen-bSeedsCount" type="checkbox"
+                                    checked></input><label for="mazeGen-bSeedsCount">Seeds count</label></td>
+                              <td class="mazeGen-bSeedsCount-visibility">&nbsp;=&nbsp;</td>
+                              <td class="mazeGen-bSeedsCount-visibility"><input id="mazeGen-nSeedsCount" type="number"
+                                    step="1" value="1" min="0"></input></td>
+                           </tr>
+                           <tr>
+                              <td class="std-block"><input id="mazeGen-bCreatedSeeds" type="checkbox"></input><label
+                                    for="mazeGen-bCreatedSeeds">Created seeds</label></td>
+                              <td class="mazeGen-bCreatedSeeds-visibility">>=</td>
+                              <td class="mazeGen-bCreatedSeeds-visibility"><input id="mazeGen-nCreatedSeeds"
+                                    type="number" step="1" value="1" min="0"></input></td>
+                           </tr>
+                        </table>
+                     </fieldset>
+                     <br />
+                     <div class="std-block"><span class="label">New seed prob</span><input id="mazeGen-newSeedProb"
+                           type="number" step=".001" value=".9" min="0" max="1"></input></div>
+                  </div>
+               </fieldset>
+            </div>
+         </fieldset>
+      </div>
+      <button id="btnGen">Generate</button>
+      <button id="btnStop">Stop</button>
+      <label for="selLook">Look</label>
+      <select id="selLook" name="selLook" onchange="setLook()">
+         <option value="">Default</option>
+         <option value="bw">B&W</option>
+      </select>
+   </fieldset>
+   <div id="placeholder" class="dg-grid"></div>
+</body>
+
 </html>

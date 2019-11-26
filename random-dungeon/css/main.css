@@ -144,7 +144,7 @@ button:disabled, button:disabled:active:hover {
    text-align: right;
 }
 
-.label {
+.label, label {
    white-space: nowrap;
    font-weight: bold;
 }
